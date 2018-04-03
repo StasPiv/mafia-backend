@@ -21,5 +21,5 @@ interface StatusEnum
 
     const TRIED_TO_REFLECT = 4;
 
-    const TRIED_TO_KILL = 5;
+    const SHOTTED = 5;
 }

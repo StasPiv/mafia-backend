@@ -20,28 +20,37 @@ use Doctrine\Common\Collections\Collection;
 class ReflectAction implements NightAction
 {
     /**
-     * @param Collection|NightUserGroup[] $source
-     * @param Collection|NightUser[] $destination
+     * @param NightUserGroup $source
+     * @param Collection|User[] $destination
      * @return Result
      */
-    function execute(Collection $source, Collection $destination): Result
+    function execute(NightUserGroup $source, Collection $destination): Result
     {
-        foreach ($source as $user) {
+        foreach ($source->getNightUsers() as $user) {
             $user->addStatus(StatusEnum::TRIED_TO_REFLECT);
         }
 
         foreach ($destination as $user) {
             $user->addStatus(StatusEnum::REFLECTED);
 
-            foreach ($source as $nightVisitor) {
+            foreach ($source->getNightUsers() as $nightVisitor) {
                 $user->addNightVisitor($nightVisitor);
             }
         }
 
         return new SimpleResult(
-            sprintf('You have tried to reflect: %s',
+            sprintf('%s tried to reflect: %s',
                 implode(
-                    ',',
+                    ', ',
+                    array_map(
+                        function (User $user) {
+                            return $user->getName();
+                        },
+                        $source->getNightUsers()->getValues()
+                    )
+                ),
+                implode(
+                    ', ',
                     array_map(
                         function (User $user) {
                             return $user->getName();

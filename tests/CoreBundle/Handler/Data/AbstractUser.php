@@ -16,6 +16,8 @@ use Doctrine\Common\Collections\Collection;
 
 abstract class AbstractUser implements User
 {
+    protected $name = '';
+
     /**
      * @var Collection|int[]
      */
@@ -25,6 +27,11 @@ abstract class AbstractUser implements User
      * @var Collection|NightUser[]
      */
     protected $nightVisitors;
+
+    /**
+     * @var Collection|NightUser[]
+     */
+    protected $killers;
 
     protected $alive = true;
 
@@ -40,8 +47,14 @@ abstract class AbstractUser implements User
 
     public function __construct()
     {
+        $this->init();
+    }
+
+    public function init()
+    {
         $this->statuses = new ArrayCollection();
         $this->nightVisitors = new ArrayCollection();
+        $this->killers = new ArrayCollection();
     }
 
     function addStatus(int $status): User
@@ -76,6 +89,25 @@ abstract class AbstractUser implements User
     }
 
     /**
+     * @param NightUser $nightUser
+     * @return User
+     */
+    function addKiller(NightUser $nightUser): User
+    {
+        $this->killers->add($nightUser);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|NightUser[]
+     */
+    function getKillers(): Collection
+    {
+        return $this->killers;
+    }
+
+    /**
      * @return bool
      */
     function die(): bool
@@ -87,7 +119,7 @@ abstract class AbstractUser implements User
 
     function talk(): bool
     {
-        echo 'Bla bla bla bla' . PHP_EOL;
+        //echo 'Bla bla bla bla' . PHP_EOL;
         return true;
     }
 
@@ -140,6 +172,14 @@ abstract class AbstractUser implements User
         $this->votesAgainst += $number;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 
 }

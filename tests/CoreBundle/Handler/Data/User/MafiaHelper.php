@@ -12,6 +12,8 @@ use CoreBundle\Tests\Handler\Data\AbstractNightUser;
 
 class MafiaHelper extends AbstractNightUser
 {
+    protected $name = 'Mafia helper';
+
     function isPeaceful(): bool
     {
         return false;
@@ -20,11 +22,6 @@ class MafiaHelper extends AbstractNightUser
     function getOrder(): int
     {
         return 2;
-    }
-
-    function getName(): string
-    {
-        return 'Mafia helper';
     }
 
 }

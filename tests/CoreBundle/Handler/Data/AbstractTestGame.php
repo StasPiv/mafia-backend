@@ -62,7 +62,7 @@ abstract class AbstractTestGame implements Game
         $this->nightUserGroups->add($nightUserGroup);
 
         foreach ($nightUserGroup->getNightUsers() as $nightUser) {
-            $this->addAliveUser($nightUser);
+            $this->addUser($nightUser);
         }
 
         return $this;
@@ -73,7 +73,7 @@ abstract class AbstractTestGame implements Game
         return $this->nightUserGroups;
     }
 
-    function addAliveUser(NightUser $nightUser): Game
+    function addAliveUser(User $nightUser): Game
     {
         $this->aliveUsers->add($nightUser);
 
@@ -82,7 +82,15 @@ abstract class AbstractTestGame implements Game
 
     function getAliveUsers(): Collection
     {
-        return $this->aliveUsers;
+        $aliveUsers = new ArrayCollection();
+
+        foreach ($this->users as $user) {
+            if ($user->isAlive()) {
+                $aliveUsers->add($user);
+            }
+        }
+
+        return $this->aliveUsers = $aliveUsers;
     }
 
     function setFinished(bool $finished): bool

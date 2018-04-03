@@ -17,13 +17,21 @@ use Doctrine\Common\Collections\Collection;
 
 class Scenario
 {
+    /**
+     * @param Director $director
+     * @param Game $game
+     * @param GameAnalyzer $gameAnalyzer
+     * @param array $moves
+     */
     public function process(Director $director, Game $game, GameAnalyzer $gameAnalyzer, array $moves = [])
     {
-        $nightCounter = 0;
-        $dayCounter = 0;
+        $roundCounter = 0;
 
         do {
-            $nightUserGroupCounter = 0;
+            foreach ($game->getUsers() as $user) {
+                $user->init();
+            }
+
             foreach ($game->getNightUserGroups() as $nightUserGroup) {
                 $director->askAboutNightAction($nightUserGroup);
 
@@ -35,56 +43,60 @@ class Scenario
                     /** @var Collection|User[] $destinationUsers */
 
                     $destinationUsers = $game->getAliveUsers()->filter(
-                        function (User $user) use ($moves, $nightCounter, $nightUserGroupCounter)
+                        function (User $user) use ($moves, $roundCounter, $nightUserGroup)
                         {
-                            return in_array($user->getName(), $moves['night'][$nightCounter][$nightUserGroupCounter]);
+                            return in_array($user->getName(), $moves[$roundCounter]['night'][$nightUserGroup->getName()]);
                         }
                     );
 
-                    $result = $action->execute($nightUserGroup->getNightUsers(), $destinationUsers);
+                    $result = $action->execute($nightUserGroup, $destinationUsers);
 
                     echo $result . PHP_EOL;
                 }
-
-                $nightUserGroupCounter++;
             }
 
-            $nightCounter++;
+            $gameAnalyzer->analyzeNight($game);
 
-            $gameAnalyzer->analyze($game);
-
-            foreach ($game->getAliveUsers() as $aliveUser) {
-                if (!$aliveUser->canTalk()) {
+            foreach ($game->getAliveUsers() as $talkingUser) {
+                if (!$talkingUser->canTalk()) {
                     continue;
                 }
 
-                echo $director->askAboutTalk($aliveUser) . PHP_EOL;
-                $aliveUser->talk();
+                echo $director->askAboutTalk($talkingUser) . PHP_EOL;
+                $talkingUser->talk();
             }
 
-            foreach ($game->getAliveUsers() as $aliveUser) {
-                if (!$aliveUser->canVote()) {
+            foreach ($game->getAliveUsers() as $votingUser) {
+                if (!$votingUser->canVote()) {
                     continue;
                 }
 
-                echo $director->askAboutVote($aliveUser) . PHP_EOL;
+                if (!isset($moves[$roundCounter]['day'][$votingUser->getName()])) {
+                    continue;
+                }
 
+                echo $director->askAboutVote($votingUser) . PHP_EOL;
+
+                $nameAgainst = $moves[$roundCounter]['day'][$votingUser->getName()];
                 /** @var User $userAgainst */
                 $userAgainst = $game->getAliveUsers()->filter(
-                    function (User $user) use ($moves, $dayCounter)
+                    function (User $user) use ($votingUser, $roundCounter, $nameAgainst)
                     {
-                        return in_array($user->getName(), $moves['day'][$dayCounter]);
+                        return $user->getName() === $nameAgainst;
                     }
                 )->first();
 
-                $dayCounter++;
+                if (!$userAgainst) {
+                    throw new \RuntimeException(sprintf('There is no alive user with name %s. Round: %d, Voting user: %s', $nameAgainst, $roundCounter, $votingUser->getName()));
+                }
 
-                $aliveUser->vote($userAgainst);
+                $votingUser->vote($userAgainst);
 
-                echo sprintf('User %s votes against user %s', $aliveUser->getName(), $userAgainst->getName()) . PHP_EOL;
+                echo sprintf('User %s votes against user %s', $votingUser->getName(), $userAgainst->getName()) . PHP_EOL;
             }
+            $roundCounter++;
 
-            $gameAnalyzer->analyze($game);
-        } while (!$game->isFinished() && $nightCounter < 4 && $dayCounter < 4);
+            $gameAnalyzer->analyzeVote($game);
+        } while (!$game->isFinished());
     }
 }

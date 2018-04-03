@@ -15,6 +15,13 @@ use Doctrine\Common\Collections\Collection;
 
 abstract class AbstractNightUserGroup implements NightUserGroup
 {
+    protected $name = '';
+
+    /**
+     * @var Collection|int[]
+     */
+    protected $statuses;
+
     /**
      * @var Collection|NightUser[]
      */
@@ -26,6 +33,8 @@ abstract class AbstractNightUserGroup implements NightUserGroup
 
     public function __construct()
     {
+        $this->statuses = new ArrayCollection();
+
         $this->nightUsers = new ArrayCollection();
 
         foreach ($this->nightUsers as $nightUser) {
@@ -34,6 +43,18 @@ abstract class AbstractNightUserGroup implements NightUserGroup
 
         $this->nightActions = new ArrayCollection();
         $this->destinationUsers = new ArrayCollection();
+    }
+
+    function addStatus(int $status): NightUserGroup
+    {
+        $this->statuses->add($status);
+
+        return $this;
+    }
+
+    function getStatuses(): Collection
+    {
+        return $this->statuses;
     }
 
 
@@ -72,6 +93,14 @@ abstract class AbstractNightUserGroup implements NightUserGroup
     function getDestinationUsers(): Collection
     {
         return $this->destinationUsers;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 
 }

@@ -14,5 +14,10 @@ interface GameAnalyzer
     /**
      * @param Game $game
      */
-    function analyze(Game $game);
+    function analyzeNight(Game $game);
+
+    /**
+     * @param Game $game
+     */
+    function analyzeVote(Game $game);
 }

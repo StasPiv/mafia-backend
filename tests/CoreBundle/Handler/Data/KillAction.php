@@ -21,18 +21,20 @@ use Doctrine\Common\Collections\Collection;
 class KillAction implements NightAction
 {
     /**
-     * @param Collection|NightUserGroup[] $source
-     * @param Collection|NightUser[] $destination
+     * @param NightUserGroup $source
+     * @param Collection|User[] $destination
      * @return Result
      */
-    function execute(Collection $source, Collection $destination): Result
+    function execute(NightUserGroup $source, Collection $destination): Result
     {
-        if (empty($destination)) {
+        if ($destination->isEmpty()) {
             return new NullResult();
         }
 
-        foreach ($source as $user) {
-            $user->addStatus(StatusEnum::TRIED_TO_KILL);
+        $source->addStatus(StatusEnum::SHOTTED);
+
+        foreach ($source->getNightUsers() as $user) {
+            $user->addStatus(StatusEnum::SHOTTED);
         }
 
         foreach ($destination as $user) {
@@ -40,6 +42,7 @@ class KillAction implements NightAction
 
             foreach ($source as $nightVisitor) {
                 $user->addNightVisitor($nightVisitor);
+                $user->addKiller($nightVisitor);
             }
         }
 
@@ -51,7 +54,7 @@ class KillAction implements NightAction
                         function (User $user) {
                             return $user->getName();
                         },
-                        $source->getValues()
+                        $source->getNightUsers()->getValues()
                     )
                 ),
                 implode(

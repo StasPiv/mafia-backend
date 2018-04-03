@@ -14,9 +14,9 @@ use Doctrine\Common\Collections\Collection;
 interface NightAction
 {
     /**
-     * @param Collection|NightUserGroup[] $source
-     * @param Collection|NightUser[] $destination
+     * @param NightUserGroup $source
+     * @param Collection|User[] $destination
      * @return Result
      */
-    function execute(Collection $source, Collection $destination): Result;
+    function execute(NightUserGroup $source, Collection $destination): Result;
 }

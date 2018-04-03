@@ -12,6 +12,8 @@ use CoreBundle\Tests\Handler\Data\AbstractNightUser;
 
 class Dambldor extends AbstractNightUser
 {
+    protected $name = 'Dambldor';
+
     function isPeaceful(): bool
     {
         return true;
@@ -20,11 +22,6 @@ class Dambldor extends AbstractNightUser
     function getOrder(): int
     {
         return 1;
-    }
-
-    function getName(): string
-    {
-        return 'Dambldor';
     }
 
 }

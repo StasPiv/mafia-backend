@@ -13,6 +13,8 @@ use CoreBundle\Tests\Handler\Data\KillAction;
 
 class Mafia extends AbstractNightUserGroup
 {
+    protected $name = 'Mafia';
+
     public function __construct()
     {
         parent::__construct();
@@ -20,11 +22,6 @@ class Mafia extends AbstractNightUserGroup
         $this->nightActions->add(new KillAction());
         $this->nightUsers->add(new MafiaBoss());
         $this->nightUsers->add(new MafiaHelper());
-    }
-
-    function getName(): string
-    {
-        return 'Mafia';
     }
 
     function getOrder(): int

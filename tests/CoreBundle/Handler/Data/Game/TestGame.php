@@ -20,9 +20,9 @@ class TestGame extends AbstractTestGame
     {
         parent::__construct();
 
-        $this->aliveUsers->add(new PeacefulCitizen('Some nick'));
-        $this->aliveUsers->add(new PeacefulCitizen('Nick 2'));
-        $this->aliveUsers->add(new PeacefulCitizen('Another nick'));
+        $this->addUser(new PeacefulCitizen('Some nick'));
+        $this->addUser(new PeacefulCitizen('Nick 2'));
+        $this->addUser(new PeacefulCitizen('Another nick'));
 
         $this->addNightUserGroup(new Mafia());
         $this->addNightUserGroup(new ReflectorsGroup());

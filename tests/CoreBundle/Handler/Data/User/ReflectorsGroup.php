@@ -14,6 +14,8 @@ use CoreBundle\Tests\Handler\Data\ReflectAction;
 
 class ReflectorsGroup extends AbstractNightUserGroup
 {
+    protected $name = 'Reflectors';
+
     /**
      * ReflectorsGroup constructor.
      */
@@ -23,11 +25,6 @@ class ReflectorsGroup extends AbstractNightUserGroup
 
         $this->nightActions->add(new ReflectAction());
         $this->nightUsers->add(new SiriusBlack());
-    }
-
-    function getName(): string
-    {
-        return 'Reflectors';
     }
 
     function getOrder(): int

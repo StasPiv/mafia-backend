@@ -13,6 +13,13 @@ use Doctrine\Common\Collections\Collection;
 
 interface NightUserGroup
 {
+    function addStatus(int $status): self;
+
+    /**
+     * @return Collection|int[]
+     */
+    function getStatuses(): Collection;
+
     /**
      * @return string
      */

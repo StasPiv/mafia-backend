@@ -13,14 +13,11 @@ use CoreBundle\Tests\Handler\Data\AbstractNightUser;
 
 class SiriusBlack extends AbstractNightUser
 {
+    protected $name = 'Sirius Black';
+
     function getOrder(): int
     {
         return 1;
-    }
-
-    function getName(): string
-    {
-        return 'Sirius Black';
     }
 
     function isPeaceful(): bool

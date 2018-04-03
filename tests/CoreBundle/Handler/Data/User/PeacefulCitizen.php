@@ -25,11 +25,6 @@ class PeacefulCitizen extends AbstractUser
         $this->name = $name;
     }
 
-    function getName(): string
-    {
-        return $this->name;
-    }
-
     function isPeaceful(): bool
     {
         return true;
