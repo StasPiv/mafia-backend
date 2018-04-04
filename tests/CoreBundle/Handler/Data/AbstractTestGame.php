@@ -8,18 +8,17 @@
 
 namespace CoreBundle\Tests\Handler\Data;
 
-
 use CoreBundle\Model\Game;
-use CoreBundle\Model\NightUser;
 use CoreBundle\Model\NightUserGroup;
 use CoreBundle\Model\User;
-use Doctrine\Common\Collections\ArrayCollection;
+use CoreBundle\Model\UserCollectionInterface;
+use CoreBundle\Tests\Handler\Data\Game\TestGame;
 use Doctrine\Common\Collections\Collection;
 
 abstract class AbstractTestGame implements Game
 {
     /**
-     * @var Collection|User[]
+     * @var UserCollectionInterface|User[]
      */
     protected $users;
 
@@ -29,7 +28,7 @@ abstract class AbstractTestGame implements Game
     protected $nightUserGroups;
 
     /**
-     * @var Collection|User[]
+     * @var UserCollectionInterface|User[]
      */
     protected $aliveUsers;
 
@@ -38,11 +37,21 @@ abstract class AbstractTestGame implements Game
      */
     protected $finished = false;
 
+    /**
+     * @var bool
+     */
+    protected $mafiaWon = false;
+
+    /**
+     * @var bool
+     */
+    protected $cityWon = false;
+
     public function __construct()
     {
-        $this->users = new ArrayCollection();
-        $this->nightUserGroups = new ArrayCollection();
-        $this->aliveUsers = new ArrayCollection();
+        $this->users = new UserCollection();
+        $this->nightUserGroups = new UserCollection();
+        $this->aliveUsers = new UserCollection();
     }
 
     function addUser(User $user): Game
@@ -52,7 +61,7 @@ abstract class AbstractTestGame implements Game
         return $this;
     }
 
-    function getUsers(): Collection
+    function getUsers(): UserCollectionInterface
     {
         return $this->users;
     }
@@ -80,9 +89,9 @@ abstract class AbstractTestGame implements Game
         return $this;
     }
 
-    function getAliveUsers(): Collection
+    function getAliveUsers(): UserCollectionInterface
     {
-        $aliveUsers = new ArrayCollection();
+        $aliveUsers = new UserCollection();
 
         foreach ($this->users as $user) {
             if ($user->isAlive()) {
@@ -105,9 +114,9 @@ abstract class AbstractTestGame implements Game
         return $this->finished;
     }
 
-    function getAlivePeacefulUsers(): Collection
+    function getAlivePeacefulUsers(): UserCollectionInterface
     {
-        $peacefulCitizens = new ArrayCollection();
+        $peacefulCitizens = new UserCollection();
 
         foreach ($this->getAliveUsers() as $user) {
             if ($user->isPeaceful()) {
@@ -116,6 +125,42 @@ abstract class AbstractTestGame implements Game
         }
 
         return $peacefulCitizens;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMafiaWon(): bool
+    {
+        return $this->mafiaWon;
+    }
+
+    /**
+     * @param bool $mafiaWon
+     * @return Game
+     */
+    function setMafiaWon(bool $mafiaWon): Game
+    {
+        $this->mafiaWon = $mafiaWon;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCityWon(): bool
+    {
+        return $this->cityWon;
+    }
+
+    /**
+     * @param bool $cityWon
+     * @return Game
+     */
+    function setCityWon(bool $cityWon): Game
+    {
+        $this->cityWon = $cityWon;
+        return $this;
     }
 
 }

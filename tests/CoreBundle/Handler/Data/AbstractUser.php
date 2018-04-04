@@ -10,7 +10,9 @@ namespace CoreBundle\Tests\Handler\Data;
 
 
 use CoreBundle\Model\NightUser;
+use CoreBundle\Model\NightUserGroup;
 use CoreBundle\Model\User;
+use CoreBundle\Model\UserCollectionInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -24,12 +26,12 @@ abstract class AbstractUser implements User
     protected $statuses;
 
     /**
-     * @var Collection|NightUser[]
+     * @var UserCollectionInterface|NightUser[]
      */
     protected $nightVisitors;
 
     /**
-     * @var Collection|NightUser[]
+     * @var UserCollectionInterface|NightUser[]
      */
     protected $killers;
 
@@ -53,8 +55,9 @@ abstract class AbstractUser implements User
     public function init()
     {
         $this->statuses = new ArrayCollection();
-        $this->nightVisitors = new ArrayCollection();
+        $this->nightVisitors = new UserCollection();
         $this->killers = new ArrayCollection();
+        $this->votesAgainst = 0;
     }
 
     function addStatus(int $status): User
@@ -81,26 +84,26 @@ abstract class AbstractUser implements User
     }
 
     /**
-     * @return Collection|NightUser[]
+     * @return UserCollectionInterface|NightUser[]
      */
-    function getNightVisitors(): Collection
+    function getNightVisitors(): UserCollectionInterface
     {
         return $this->nightVisitors;
     }
 
     /**
-     * @param NightUser $nightUser
+     * @param NightUser|NightUserGroup $nightUserGroup
      * @return User
      */
-    function addKiller(NightUser $nightUser): User
+    function addKiller(NightUserGroup $nightUserGroup): User
     {
-        $this->killers->add($nightUser);
+        $this->killers->add($nightUserGroup);
 
         return $this;
     }
 
     /**
-     * @return Collection|NightUser[]
+     * @return Collection|NightUserGroup[]
      */
     function getKillers(): Collection
     {
@@ -114,6 +117,8 @@ abstract class AbstractUser implements User
     {
         $this->alive = false;
 
+        echo sprintf('User "%s" died' . PHP_EOL, $this);
+
         return $this->alive;
     }
 
@@ -126,6 +131,7 @@ abstract class AbstractUser implements User
     function vote(User $user): bool
     {
         $user->addVoteAgainst();
+        echo sprintf('User %s votes against user %s', $this->getName(), $user->getName()) . PHP_EOL;
 
         return true;
     }
@@ -180,6 +186,24 @@ abstract class AbstractUser implements User
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @param string $name
+     * @return AbstractUser
+     */
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    function __toString()
+    {
+        return $this->getName();
     }
 
 }

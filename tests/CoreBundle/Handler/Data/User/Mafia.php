@@ -22,6 +22,9 @@ class Mafia extends AbstractNightUserGroup
         $this->nightActions->add(new KillAction());
         $this->nightUsers->add(new MafiaBoss());
         $this->nightUsers->add(new MafiaHelper());
+        $this->nightUsers->add((new MafiaHelper())->setName('Mafia helper 2'));
+
+        $this->initNightUsersByGroup();
     }
 
     function getOrder(): int

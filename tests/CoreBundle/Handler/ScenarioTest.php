@@ -9,8 +9,8 @@
 namespace CoreBundle\Tests\Handler;
 
 use CoreBundle\Handler\Scenario;
+use CoreBundle\Handler\ScenarioGenerator;
 use CoreBundle\Tests\Handler\Data\Director\SilentDirector;
-use CoreBundle\Tests\Handler\Data\Director\TestDirector;
 use CoreBundle\Tests\Handler\Data\Game\TestGame;
 use CoreBundle\Tests\Handler\Data\TestGameAnalyzer;
 
@@ -24,114 +24,7 @@ class ScenarioTest extends \PHPUnit_Framework_TestCase
         /**
          * Users: Peaceful (Nick 2, Some nick, Another nick), Mafia (Mafia helper, Mafia boss), Observers (Dambldor), Reflectors (Sirius Black)
          */
-
-        $moves = [
-            [
-                'night' => [
-                    'Mafia' => [
-                        'Nick 2'
-                    ],
-                    'Reflectors' => [
-                        'Some nick'
-                    ],
-                    'Observers' => [
-                        'Mafia helper'
-                    ]
-                ],
-                'day' => [
-//                    'Some nick' => 'Another nick',
-//                    'Another nick' => 'Mafia boss',
-//                    'Mafia helper' => 'Nick 2',
-//                    'Mafia boss' => 'Nick 2',
-//                    'Dambldor' => 'Nick 2',
-//                    'Sirius Black' => 'Nick 2'
-                ],
-            ],
-            [
-                'night' => [
-                    'Mafia' => [
-                        'Dambldor'
-                    ],
-                    'Reflectors' => [
-                        'Some nick'
-                    ],
-                    'Observers' => [
-                        'Mafia helper'
-                    ]
-                ],
-                'day' => [
-//                    'Some nick' => 'Nick 2',
-//                    'Another nick' => 'Mafia boss',
-//                    'Mafia helper' => 'Nick 2',
-//                    'Mafia boss' => 'Nick 2',
-//                    'Dambldor' => 'Nick 2',
-//                    'Sirius Black' => 'Nick 2'
-                ],
-            ],
-            [
-                'night' => [
-                    'Mafia' => [
-                        'Sirius Black'
-                    ],
-                    'Reflectors' => [
-                        'Some nick'
-                    ],
-                    'Observers' => [
-                        'Mafia helper'
-                    ]
-                ],
-                'day' => [
-//                    'Some nick' => 'Nick 2',
-//                    'Another nick' => 'Mafia boss',
-//                    'Mafia helper' => 'Nick 2',
-//                    'Mafia boss' => 'Nick 2',
-//                    'Dambldor' => 'Nick 2',
-//                    'Sirius Black' => 'Nick 2'
-                ],
-            ],
-            [
-                'night' => [
-                    'Mafia' => [
-                        'Another nick'
-                    ],
-                    'Reflectors' => [
-                        'Some nick'
-                    ],
-                    'Observers' => [
-                        'Mafia helper'
-                    ]
-                ],
-                'day' => [
-//                    'Some nick' => 'Nick 2',
-//                    'Another nick' => 'Mafia boss',
-//                    'Mafia helper' => 'Nick 2',
-//                    'Mafia boss' => 'Nick 2',
-//                    'Dambldor' => 'Nick 2',
-//                    'Sirius Black' => 'Nick 2'
-                ],
-            ],
-            [
-                'night' => [
-                    'Mafia' => [
-                        'Some nick'
-                    ],
-                    'Reflectors' => [
-                        'Some nick'
-                    ],
-                    'Observers' => [
-                        'Mafia helper'
-                    ]
-                ],
-                'day' => [
-//                    'Some nick' => 'Nick 2',
-//                    'Another nick' => 'Mafia boss',
-//                    'Mafia helper' => 'Nick 2',
-//                    'Mafia boss' => 'Nick 2',
-//                    'Dambldor' => 'Nick 2',
-//                    'Sirius Black' => 'Nick 2'
-                ],
-            ],
-        ];
+        $moves = json_decode(file_get_contents(__DIR__ . '/_json/test1.json'), true);
 
         $scenario->process(
             new SilentDirector(),
@@ -139,5 +32,12 @@ class ScenarioTest extends \PHPUnit_Framework_TestCase
             new TestGameAnalyzer(),
             $moves
         );
+    }
+
+    public function testGenerator()
+    {
+        $scenarioGenerator = new ScenarioGenerator(new TestGame());
+
+        $scenarioGenerator->generateScenario();
     }
 }

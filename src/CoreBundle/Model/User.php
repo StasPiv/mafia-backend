@@ -27,14 +27,14 @@ interface User
     function addNightVisitor(NightUser $nightUser): self;
 
     /**
-     * @return Collection|NightUser[]
+     * @return UserCollectionInterface|NightUser[]
      */
-    function getNightVisitors(): Collection;
+    function getNightVisitors(): UserCollectionInterface;
 
-    function addKiller(NightUser $nightUser): self;
+    function addKiller(NightUserGroup $nightUser): self;
 
     /**
-     * @return Collection|NightUser[]
+     * @return Collection|NightUserGroup[]
      */
     function getKillers(): Collection;
 
@@ -61,4 +61,6 @@ interface User
     function addVoteAgainst(int $number = 1): self;
 
     public function init();
+
+    function __toString();
 }

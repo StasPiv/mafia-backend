@@ -12,6 +12,7 @@ namespace CoreBundle\Handler;
 use CoreBundle\Model\Director;
 use CoreBundle\Model\Game;
 use CoreBundle\Model\GameAnalyzer;
+use CoreBundle\Model\NightUserGroup;
 use CoreBundle\Model\User;
 use Doctrine\Common\Collections\Collection;
 
@@ -23,80 +24,191 @@ class Scenario
      * @param GameAnalyzer $gameAnalyzer
      * @param array $moves
      */
-    public function process(Director $director, Game $game, GameAnalyzer $gameAnalyzer, array $moves = [])
+    public function process(Director $director, Game $game, GameAnalyzer $gameAnalyzer, array $moves)
     {
         $roundCounter = 0;
 
         do {
-            foreach ($game->getUsers() as $user) {
-                $user->init();
+            $roundMoves = $moves[$roundCounter];
+
+            if (!$this->performRoundMoves($director, $game, $gameAnalyzer, $roundMoves, $roundCounter)) {
+                break;
             }
 
-            foreach ($game->getNightUserGroups() as $nightUserGroup) {
-                $director->askAboutNightAction($nightUserGroup);
+            $roundCounter++;
+        } while (!$game->isFinished());
+    }
 
-                if (!$nightUserGroup->isGroupAlive()) {
-                    continue;
-                }
+    /**
+     * @param Director $director
+     * @param Game $game
+     * @param GameAnalyzer $gameAnalyzer
+     * @param array $roundMoves
+     * @param int $roundCounter
+     *
+     * @return bool
+     */
+    public function performRoundMoves(Director $director, Game $game, GameAnalyzer $gameAnalyzer, array $roundMoves, int $roundCounter): bool
+    {
+        $this->resetUsers($game);
 
-                foreach ($nightUserGroup->getNightActions() as $action) {
-                    /** @var Collection|User[] $destinationUsers */
+        $this->performNightActionsForAllGroups($director, $game, $roundMoves['night'], $roundCounter);
+        $gameAnalyzer->analyzeNight($game);
 
-                    $destinationUsers = $game->getAliveUsers()->filter(
-                        function (User $user) use ($moves, $roundCounter, $nightUserGroup)
-                        {
-                            return in_array($user->getName(), $moves[$roundCounter]['night'][$nightUserGroup->getName()]);
-                        }
-                    );
+        if ($game->isFinished()) {
+            return false;
+        }
 
-                    $result = $action->execute($nightUserGroup, $destinationUsers);
+        $this->performTalkForAllUsers($director, $game);
+        $this->performVoteForAllUsers($director, $game, $roundMoves['day'], $roundCounter);
 
-                    echo $result . PHP_EOL;
-                }
-            }
+        $gameAnalyzer->analyzeDay($game);
 
-            $gameAnalyzer->analyzeNight($game);
+        if ($game->isFinished()) {
+            return false;
+        }
 
-            foreach ($game->getAliveUsers() as $talkingUser) {
-                if (!$talkingUser->canTalk()) {
-                    continue;
-                }
+        return true;
+    }
 
-                echo $director->askAboutTalk($talkingUser) . PHP_EOL;
-                $talkingUser->talk();
-            }
+    /**
+     * @param Game $game
+     * @param NightUserGroup $nightUserGroup
+     * @param array $nightMoves
+     * @param int $roundCounter
+     */
+    private function performNightActions(Game $game, NightUserGroup $nightUserGroup, array $nightMoves, int $roundCounter)
+    {
+        if (!$nightUserGroup->isGroupAlive()) {
+            return;
+        }
 
-            foreach ($game->getAliveUsers() as $votingUser) {
-                if (!$votingUser->canVote()) {
-                    continue;
-                }
+        foreach ($nightUserGroup->getNightActions() as $action) {
+            /** @var Collection|User[] $destinationUsers */
 
-                if (!isset($moves[$roundCounter]['day'][$votingUser->getName()])) {
-                    continue;
-                }
+            $userNames = $nightMoves[$nightUserGroup->getName()];
 
-                echo $director->askAboutVote($votingUser) . PHP_EOL;
-
-                $nameAgainst = $moves[$roundCounter]['day'][$votingUser->getName()];
-                /** @var User $userAgainst */
-                $userAgainst = $game->getAliveUsers()->filter(
-                    function (User $user) use ($votingUser, $roundCounter, $nameAgainst)
-                    {
-                        return $user->getName() === $nameAgainst;
+            foreach ($userNames as $userName) {
+                /** @var User $gameUser */
+                $gameUser = $game->getUsers()->filter(
+                    function (User $user) use ($userName) {
+                        return $user->getName() === $userName;
                     }
                 )->first();
 
-                if (!$userAgainst) {
-                    throw new \RuntimeException(sprintf('There is no alive user with name %s. Round: %d, Voting user: %s', $nameAgainst, $roundCounter, $votingUser->getName()));
+                if (!$gameUser) {
+                    throw new \RuntimeException(sprintf('%s can not make action against unexisting user %s', $nightUserGroup, $userName));
                 }
 
-                $votingUser->vote($userAgainst);
-
-                echo sprintf('User %s votes against user %s', $votingUser->getName(), $userAgainst->getName()) . PHP_EOL;
+                if (!$gameUser->isAlive()) {
+                    throw new \RuntimeException(
+                        sprintf(
+                            '%s can not make action against dead user %s. Round %d',
+                                $nightUserGroup,
+                                $userName,
+                                $roundCounter
+                        )
+                    );
+                }
             }
-            $roundCounter++;
 
-            $gameAnalyzer->analyzeVote($game);
-        } while (!$game->isFinished());
+            $destinationUsers = $game->getAliveUsers()->filter(
+                function (User $user) use ($userNames) {
+                    return in_array($user->getName(), $userNames);
+                }
+            );
+
+            $result = $action->execute($nightUserGroup, $destinationUsers);
+
+            echo $result . PHP_EOL;
+        }
+    }
+
+    /**
+     * @param Game $game
+     * @param User $votingUser
+     * @param string $nameAgainst
+     * @param int $roundCounter
+     */
+    private function performVote(Game $game, User $votingUser, string $nameAgainst, int $roundCounter)
+    {
+        /** @var User $userAgainst */
+        $userAgainst = $game->getAliveUsers()->filter(
+            function (User $user) use ($votingUser, $nameAgainst) {
+                return $user->getName() === $nameAgainst;
+            }
+        )->first();
+
+        if (!$userAgainst) {
+            throw new \RuntimeException(sprintf('There is no alive user with name %s. Round: %d, Voting user: %s', $nameAgainst, $roundCounter, $votingUser->getName()));
+        }
+
+        $votingUser->vote($userAgainst);
+    }
+
+    /**
+     * @param Director $director
+     * @param Game $game
+     * @param array $nightMoves
+     * @param int $roundCounter
+     */
+    public function performNightActionsForAllGroups(Director $director, Game $game, array $nightMoves, int $roundCounter)
+    {
+        foreach ($game->getNightUserGroups() as $nightUserGroup) {
+            $director->askAboutNightAction($nightUserGroup);
+
+            $this->performNightActions($game, $nightUserGroup, $nightMoves, $roundCounter);
+        }
+    }
+
+    /**
+     * @param Director $director
+     * @param Game $game
+     * @param array $dayMoves
+     * @param int $roundCounter
+     */
+    public function performVoteForAllUsers(Director $director, Game $game, array $dayMoves, int $roundCounter)
+    {
+        foreach ($game->getAliveUsers() as $votingUser) {
+            if (!$votingUser->canVote()) {
+                continue;
+            }
+
+            if (!isset($dayMoves[$votingUser->getName()])) {
+                continue;
+            }
+
+            $userAgainstName = $dayMoves[$votingUser->getName()];
+
+            $director->askAboutVote($votingUser);
+
+            $this->performVote($game, $votingUser, $userAgainstName, $roundCounter);
+        }
+    }
+
+    /**
+     * @param Game $game
+     */
+    public function resetUsers(Game $game)
+    {
+        foreach ($game->getUsers() as $user) {
+            $user->init();
+        }
+    }
+
+    /**
+     * @param Director $director
+     * @param Game $game
+     */
+    private function performTalkForAllUsers(Director $director, Game $game)
+    {
+        foreach ($game->getAliveUsers() as $talkingUser) {
+            if (!$talkingUser->canTalk()) {
+                continue;
+            }
+
+            $director->askAboutTalk($talkingUser);
+            $talkingUser->talk();
+        }
     }
 }

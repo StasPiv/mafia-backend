@@ -33,12 +33,14 @@ class TestDirector implements Director
 
     public function askAboutTalk(User $user)
     {
-        return sprintf('Please say dear %s', $user->getName());
+        echo sprintf('Please say dear %s', $user->getName()) . PHP_EOL;
+        return true;
     }
 
     public function askAboutVote(User $user)
     {
-        return sprintf('Please vote dear %s', $user->getName());
+        echo sprintf('Please vote dear %s' . PHP_EOL, $user->getName());
+        return true;
     }
 
 }

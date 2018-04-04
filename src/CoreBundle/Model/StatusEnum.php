@@ -22,4 +22,8 @@ interface StatusEnum
     const TRIED_TO_REFLECT = 4;
 
     const SHOTTED = 5;
+
+    const BLOCKED = 6;
+
+    const TRIED_TO_BLOCK = 7;
 }

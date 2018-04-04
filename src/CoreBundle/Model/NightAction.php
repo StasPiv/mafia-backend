@@ -15,8 +15,8 @@ interface NightAction
 {
     /**
      * @param NightUserGroup $source
-     * @param Collection|User[] $destination
+     * @param UserCollectionInterface|User[] $destination
      * @return Result
      */
-    function execute(NightUserGroup $source, Collection $destination): Result;
+    function execute(NightUserGroup $source, UserCollectionInterface $destination): Result;
 }

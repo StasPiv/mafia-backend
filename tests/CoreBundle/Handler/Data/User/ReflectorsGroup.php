@@ -25,6 +25,8 @@ class ReflectorsGroup extends AbstractNightUserGroup
 
         $this->nightActions->add(new ReflectAction());
         $this->nightUsers->add(new SiriusBlack());
+
+        $this->initNightUsersByGroup();
     }
 
     function getOrder(): int

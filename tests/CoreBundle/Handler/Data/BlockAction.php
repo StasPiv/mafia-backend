@@ -2,8 +2,8 @@
 /**
  * Created by mafia-backend.
  * User: ssp
- * Date: 02.04.18
- * Time: 16:33
+ * Date: 04.04.18
+ * Time: 19:26
  */
 
 namespace CoreBundle\Tests\Handler\Data;
@@ -16,26 +16,31 @@ use CoreBundle\Model\StatusEnum;
 use CoreBundle\Model\User;
 use CoreBundle\Model\UserCollectionInterface;
 
-class ObserveAction implements NightAction
+class BlockAction implements NightAction
 {
     /**
      * @param NightUserGroup $source
-     * @param UserCollectionInterface|User[] $destination
+     * @param User[]|UserCollectionInterface $destination
      * @return Result
      */
     function execute(NightUserGroup $source, UserCollectionInterface $destination): Result
     {
-        foreach ($destination as $user) {
-            $user->addStatus(StatusEnum::OBSERVED);
+        foreach ($source->getNightUsers() as $user) {
+            $user->addStatus(StatusEnum::TRIED_TO_BLOCK);
         }
 
-        /** @var User $destinationUser */
-        $destinationUser = $destination->first();
+        foreach ($destination as $user) {
+            $user->addStatus(StatusEnum::BLOCKED);
+
+            foreach ($source->getNightUsers() as $nightVisitor) {
+                $user->addNightVisitor($nightVisitor);
+            }
+        }
 
         return new SimpleResult(
-            sprintf('The user %s has observed %s. The user %s has been visited by: %s',
+            sprintf('%s tried to block: %s',
                 implode(
-                    ',',
+                    ', ',
                     array_map(
                         function (User $user) {
                             return $user->getName();
@@ -43,15 +48,13 @@ class ObserveAction implements NightAction
                         $source->getNightUsers()->getValues()
                     )
                 ),
-                $destinationUser->getName(),
-                $destinationUser->getName(),
                 implode(
-                    ',',
+                    ', ',
                     array_map(
                         function (User $user) {
                             return $user->getName();
                         },
-                        $destinationUser->getNightVisitors()->getValues()
+                        $destination->getValues()
                     )
                 )
             )

@@ -22,6 +22,8 @@ class ObserversGroup extends AbstractNightUserGroup
 
         $this->nightActions->add(new ObserveAction());
         $this->nightUsers->add(new Dambldor());
+
+        $this->initNightUsersByGroup();
     }
 
     function getOrder(): int

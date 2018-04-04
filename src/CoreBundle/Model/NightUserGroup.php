@@ -26,9 +26,9 @@ interface NightUserGroup
     function getName(): string;
 
     /**
-     * @return Collection|NightUser[]
+     * @return UserCollectionInterface|NightUser[]
      */
-    function getNightUsers(): Collection;
+    function getNightUsers(): UserCollectionInterface;
 
     /**
      * @return bool
@@ -41,12 +41,16 @@ interface NightUserGroup
     function getNightActions(): Collection;
 
     /**
-     * @return Collection|User[]
+     * @return UserCollectionInterface|User[]
      */
-    function getDestinationUsers(): Collection;
+    function getDestinationUsers(): UserCollectionInterface;
 
     /**
      * @return int
      */
     function getOrder(): int;
+
+    function __toString();
+
+    function isUserExist(User $user): bool;
 }

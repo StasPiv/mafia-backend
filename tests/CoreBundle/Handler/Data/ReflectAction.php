@@ -15,16 +15,16 @@ use CoreBundle\Model\Result;
 use CoreBundle\Model\SimpleResult;
 use CoreBundle\Model\StatusEnum;
 use CoreBundle\Model\User;
-use Doctrine\Common\Collections\Collection;
+use CoreBundle\Model\UserCollectionInterface;
 
 class ReflectAction implements NightAction
 {
     /**
      * @param NightUserGroup $source
-     * @param Collection|User[] $destination
+     * @param UserCollectionInterface|User[] $destination
      * @return Result
      */
-    function execute(NightUserGroup $source, Collection $destination): Result
+    function execute(NightUserGroup $source, UserCollectionInterface $destination): Result
     {
         foreach ($source->getNightUsers() as $user) {
             $user->addStatus(StatusEnum::TRIED_TO_REFLECT);
@@ -32,6 +32,14 @@ class ReflectAction implements NightAction
 
         foreach ($destination as $user) {
             $user->addStatus(StatusEnum::REFLECTED);
+
+            if ($user instanceof NightUser) {
+                try {
+                    $user->getNightGroup()->addStatus(StatusEnum::REFLECTED);
+                } catch (\Throwable $exception) {
+                    throw new \RuntimeException('Night group is empty for user ' . $user);
+                }
+            }
 
             foreach ($source->getNightUsers() as $nightVisitor) {
                 $user->addNightVisitor($nightVisitor);

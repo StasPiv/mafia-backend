@@ -8,6 +8,7 @@
 
 namespace CoreBundle\Model;
 
+use CoreBundle\Tests\Handler\Data\UserCollection;
 use Doctrine\Common\Collections\Collection;
 
 interface Game
@@ -19,9 +20,9 @@ interface Game
     function addUser(User $user): Game;
 
     /**
-     * @return Collection|User[]
+     * @return UserCollectionInterface|User[]
      */
-    function getUsers(): Collection;
+    function getUsers(): UserCollectionInterface;
 
     /**
      * @return Collection|NightUserGroup[]
@@ -29,9 +30,9 @@ interface Game
     function getNightUserGroups(): Collection;
 
     /**
-     * @return Collection|NightUser[]
+     * @return UserCollectionInterface|NightUser[]
      */
-    function getAliveUsers(): Collection;
+    function getAliveUsers(): UserCollectionInterface;
 
     function setFinished(bool $finished): bool;
 
@@ -40,8 +41,22 @@ interface Game
      */
     function isFinished(): bool;
 
+    function setMafiaWon(bool $mafiaWon): self;
+
     /**
-     * @return Collection|User[]
+     * @return bool
      */
-    function getAlivePeacefulUsers(): Collection;
+    function isMafiaWon(): bool;
+
+    function setCityWon(bool $cityWon): self ;
+
+    /**
+     * @return bool
+     */
+    function isCityWon(): bool;
+
+    /**
+     * @return UserCollectionInterface|User[]
+     */
+    function getAlivePeacefulUsers(): UserCollectionInterface;
 }

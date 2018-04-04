@@ -19,5 +19,5 @@ interface GameAnalyzer
     /**
      * @param Game $game
      */
-    function analyzeVote(Game $game);
+    function analyzeDay(Game $game);
 }
